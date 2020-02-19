@@ -14,5 +14,5 @@ for star in client.getStars(10):
 for video in client.getVideos(10,page=2):
     print(video)
     
-for photo_url in client.getPhotos(5):
-    print(photo_url)
+# for photo_url in client.getPhotos(5):
+#     print(photo_url)
