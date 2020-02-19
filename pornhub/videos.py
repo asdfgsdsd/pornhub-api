@@ -5,30 +5,66 @@ import re
 
 class Videos(object):
     
-    def __init__(self, ProxyDictionary, keywords=[], *args):
+    def __init__(self, ProxyDictionary, keywords=[], pro=False, home=False, sort=None, timeframe="a", country=None, hd=False, *args):
+        """
+
+        :param ProxyDictionary:
+        :param keywords: The keywords to search, if keyword searching. Defaults to not searching.
+        :param pro: Whether to only show professional videos. Defaults to false.
+        :param home: Whether to only show home videos. Defaults to false.
+        :param sort: How to sort. Options are mr for Featured Recently, mv for Most Viewed, tr for Top Rated, ht for Hottest, lg for Longest, and cm for newest. Defaults to Most Relevant.
+        :param timeframe: The timescale to restrict mv or tr to. Options are t for daily, w for weekly, m for monthly, y for yearly, and a for all time. Defaults to all time.
+        :param country: The country to restrict mv or ht to. Defaults to global. Too many options to list, sorry.
+        :param hd: Whether to limit to only HD video. Defaults to false.
+        :param args:
+        """
         self.keywords = keywords
         self.ProxyDictionary = ProxyDictionary
+        self.pro = pro
+        self.home = home
+        self.sort = sort
+        self.timeframe = timeframe
+        self.country = country
+        self.hd = hd
 
-    def _craftVideoURL(self, page_num):
+    def _craftVideoURL(self, page_num=1):
         # url example:
         # pornhub.com/video/search?search=arg1+arg2
         # pornhub.com/video/search?search=arg1+arg2&p=professional
         # pornhub.com/video/search?search=arg1+arg2&p=professional&page=3
 
-        payload = {"search" : "", "page" : page_num}
+        payload = {}
 
-        for item in self.keywords:
-            if (item == "professional") or (item == "pro"):
-                payload["p"] = "professional"
-            elif (item == "homemade") or (item == "home"):
-                payload["p"] = "homemade"
-            else:
+        if len(self.keywords) > 0:
+            payload["search"] = ""
+            for item in self.keywords:
                 payload["search"] += (item + " ")
+
+        if self.pro:
+            payload["p"] = "professional"
+        elif self.home:
+            payload["p"] = "homemade"
+
+        if not (self.sort is None or (len(self.keywords) > 0 and (self.sort == "ht" or self.sort == "cm"))):
+            payload["o"] = self.sort
+            if self.sort == "mv" or self.sort == "tr":
+                payload["t"] = self.timeframe
+            if self.sort == "mv" or self.sort == "ht" and self.country is not None:
+                payload["cc"] = self.country
+
+            if self.hd:
+                payload["hd"] = "1"
+
+            payload["page"] = page_num
 
         return payload
 
     def _loadVideosPage(self, page_num):
-        r = requests.get(BASE_URL + VIDEOS_URL, params=self._craftVideoURL(page_num), headers=HEADERS, proxies=self.ProxyDictionary)
+        if len(self.keywords) > 0:
+            URL_str = BASE_URL + VIDEOS_SEARCH_URL
+        else:
+            URL_str = BASE_URL + VIDEOS_URL
+        r = requests.get(URL_str, params=self._craftVideoURL(page_num), headers=HEADERS, proxies=self.ProxyDictionary)
         html = r.text
 
         return BeautifulSoup(html, "lxml")
