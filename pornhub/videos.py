@@ -5,7 +5,7 @@ import re
 
 class Videos(object):
     
-    def __init__(self, ProxyDictionary, keywords=[], pro=False, home=False, sort=None, timeframe="a", country=None, hd=False, *args):
+    def __init__(self, ProxyDictionary, keywords=None, pro=False, home=False, sort=None, timeframe="a", country=None, hd=False, *args):
         """
 
         :param ProxyDictionary:
@@ -18,6 +18,8 @@ class Videos(object):
         :param hd: Whether to limit to only HD video. Defaults to false.
         :param args:
         """
+        if keywords is None:
+            keywords = []
         self.keywords = keywords
         self.ProxyDictionary = ProxyDictionary
         self.pro = pro
@@ -49,7 +51,7 @@ class Videos(object):
             payload["o"] = self.sort
             if self.sort == "mv" or self.sort == "tr":
                 payload["t"] = self.timeframe
-            if self.sort == "mv" or self.sort == "ht" and self.country is not None:
+            if (self.sort == "mv" or self.sort == "ht") and self.country is not None:
                 payload["cc"] = self.country
 
             if self.hd:
@@ -64,13 +66,15 @@ class Videos(object):
             URL_str = BASE_URL + VIDEOS_SEARCH_URL
         else:
             URL_str = BASE_URL + VIDEOS_URL
+        # print(URL_str)
+        # print(self._craftVideoURL())
         r = requests.get(URL_str, params=self._craftVideoURL(page_num), headers=HEADERS, proxies=self.ProxyDictionary)
         html = r.text
 
         return BeautifulSoup(html, "lxml")
 
     def _scrapLiVideos(self, soup_data):
-        return soup_data.find_all("li", { "class" : re.compile(".*videoblock videoBox.*") } )
+        return soup_data.find("ul", {"class":re.compile(".*search-video-thumbs.*")}).find_all("li", { "class" : re.compile(".*videoblock videoBox.*") } )
 
     def _scrapVideoInfo(self, div_el):
         data = {

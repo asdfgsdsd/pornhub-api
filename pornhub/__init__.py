@@ -15,11 +15,13 @@ from .videos import Videos
 from .photos import Photos   
 
 class PornHub(Stars, Videos, Photos):
-    def __init__(self, ProxyIP=None, ProxyPort=None, keywords=[], *args):
+    def __init__(self, ProxyIP=None, ProxyPort=None, keywords=None, pro=False, home=False, sort=None, timeframe="a", country=None, hd=False, *args):
+        if keywords is None:
+            keywords = []
         self.setProxyDictionary(ProxyIP, ProxyPort)
 
         Stars.__init__(self, self.ProxyDictionary, *args)
-        Videos.__init__(self, self.ProxyDictionary, keywords=keywords, *args)
+        Videos.__init__(self, self.ProxyDictionary, keywords=keywords, pro=pro, home=home, sort=sort, timeframe=timeframe, country=country, hd=hd, *args)
         Photos.__init__(self, self.ProxyDictionary, keywords=keywords, *args)
 
     def setProxyDictionary(self, ProxyIP, ProxyPort):
