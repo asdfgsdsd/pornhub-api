@@ -5,7 +5,7 @@ import re
 
 class Videos(object):
     
-    def __init__(self, ProxyDictionary, keywords=None, pro=False, home=False, sort=None, timeframe="a", country=None, hd=False, *args):
+    def __init__(self, ProxyDictionary, keywords=None, pro=False, home=False, sort=None, timeframe="a", country=None, hd=False, category=None, *args):
         """
 
         :param ProxyDictionary:
@@ -28,6 +28,7 @@ class Videos(object):
         self.timeframe = timeframe
         self.country = country
         self.hd = hd
+        self.category = category
 
     def _craftVideoURL(self, page_num=1):
         # url example:
@@ -46,6 +47,9 @@ class Videos(object):
             payload["p"] = "professional"
         elif self.home:
             payload["p"] = "homemade"
+
+        if self.category is not None:
+            payload["c"] = self.category
 
         if not (self.sort is None or (len(self.keywords) > 0 and (self.sort == "ht" or self.sort == "cm"))):
             payload["o"] = self.sort
